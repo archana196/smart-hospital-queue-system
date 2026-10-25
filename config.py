@@ -1,9 +1,23 @@
 import os
+import warnings
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+_SECRET_KEY = os.environ.get('SECRET_KEY')
+if not _SECRET_KEY:
+    warnings.warn(
+        "SECRET_KEY environment variable is not set. "
+        "Using the insecure development default. "
+        "NEVER deploy to production without setting a strong SECRET_KEY env variable.",
+        stacklevel=2
+    )
+    _SECRET_KEY = 'smart-hospital-queue-secret-key-2026'
+
+_DEVICE_API_KEY = os.environ.get('DEVICE_API_KEY') or 'dev-esp8266-secret-key-2026'
+
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'smart-hospital-queue-secret-key-2026'
+    SECRET_KEY = _SECRET_KEY
+    DEVICE_API_KEY = _DEVICE_API_KEY
     
     # Database: SQLite locally, easily configurable for PostgreSQL in production
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \

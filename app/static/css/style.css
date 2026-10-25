@@ -1,0 +1,123 @@
+:root {
+    --primary-blue: #0d6efd;
+    --navy-dark: #0a2540;
+    --light-bg: #f8f9fa;
+    --card-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.08);
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light-bg);
+    color: #2c3e50;
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #0a2540 0%, #1a508b 100%);
+    color: white;
+    padding: 3.5rem 1rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+}
+
+.card-custom {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-custom:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 1rem 1.5rem rgba(0, 0, 0, 0.12);
+}
+
+.token-badge {
+    font-size: 1.8rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    background: #eef2f7;
+    color: #0d6efd;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.5rem;
+    border: 2px dashed #0d6efd;
+    display: inline-block;
+}
+
+.qr-box {
+    background: #ffffff;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.05);
+    display: inline-block;
+    max-width: 250px;
+}
+
+.priority-Emergency {
+    background-color: #dc3545;
+    color: white;
+}
+
+.priority-High {
+    background-color: #fd7e14;
+    color: white;
+}
+
+.priority-Medium {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.priority-Normal {
+    background-color: #0dcaf0;
+    color: #212529;
+}
+
+.sample-data-badge {
+    background-color: #6c757d;
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 0.25rem;
+}
+
+/* ── Form validation helper text and inline errors ─────────────────────── */
+
+/* Small grey helper text shown below every field */
+.field-hint {
+    font-size: 0.78rem;
+    color: #6c757d;
+    margin-top: 0.25rem;
+}
+
+/* Inline error text (shown by JS before server round-trip) */
+.field-error {
+    font-size: 0.78rem;
+    color: #dc3545;
+    margin-top: 0.25rem;
+}
+
+/* Smooth red border transition for invalid fields */
+.form-control.is-invalid,
+.form-select.is-invalid {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.15rem rgba(220, 53, 69, 0.15);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Smooth green border for valid (touched + correct) fields */
+.form-control.is-valid,
+.form-select.is-valid {
+    border-color: #198754;
+    box-shadow: 0 0 0 0.15rem rgba(25, 135, 84, 0.10);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Keep Bootstrap's invalid-feedback visible for select elements */
+.invalid-feedback {
+    display: block;
+}

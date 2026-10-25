@@ -1,0 +1,49 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Wi-Fi Configuration
+// ─────────────────────────────────────────────────────────────────────────────
+#define WIFI_SSID           "YOUR_WIFI_SSID"
+#define WIFI_PASSWORD       "YOUR_WIFI_PASSWORD"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Flask Backend Server Configuration
+// Enter the local IPv4 address of the computer running the Flask backend
+// (NOT 127.0.0.1 or localhost - find via 'ipconfig' in Windows Command Prompt)
+// Example: "192.168.1.100"
+// ─────────────────────────────────────────────────────────────────────────────
+#define SERVER_HOST         "192.168.1.100"
+#define SERVER_PORT         5000
+
+// Target Department Code (e.g. "CARD", "GEN", "ORTHO") or numeric ID (e.g. "1")
+#define DEPT_CODE           "GEN"
+
+// Device Authentication API Key (must match Config.DEVICE_API_KEY in backend)
+#define DEVICE_API_KEY      "dev-esp8266-secret-key-2026"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Polling & Timing Configuration
+// ─────────────────────────────────────────────────────────────────────────────
+#define POLL_INTERVAL_MS    3000   // Polling interval in ms (~3 seconds)
+#define HTTP_TIMEOUT_MS     4000   // HTTP request timeout in ms
+#define BEEP_DURATION_MS    250    // Active buzzer beep duration in ms
+
+// Startup boot beep option (disabled by default)
+#define ENABLE_STARTUP_BEEP false
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hardware Pinout Definitions (ESP32 DevKit V1)
+// ─────────────────────────────────────────────────────────────────────────────
+// I2C OLED Display (0.96" SSD1306 128x64)
+#define OLED_SDA_PIN        21     // GPIO 21 (Default I2C SDA on ESP32)
+#define OLED_SCL_PIN        22     // GPIO 22 (Default I2C SCL on ESP32)
+#define OLED_I2C_ADDR       0x3C   // Default I2C address (0x3C or 0x3D)
+#define SCREEN_WIDTH        128
+#define SCREEN_HEIGHT       64
+
+// Active Buzzer Module
+#define BUZZER_PIN          25     // GPIO 25 on ESP32
+#define BUZZER_ACTIVE_HIGH  true   // Set to false if buzzer module is active-LOW
+
+#endif // CONFIG_H
