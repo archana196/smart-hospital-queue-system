@@ -1,0 +1,39 @@
+{
+  "model_name": "RandomForestRegressor",
+  "trained_at": "2026-10-25T06:12:58.158642+00:00",
+  "total_samples": 600,
+  "train_samples": 480,
+  "test_samples": 120,
+  "test_split_ratio": 0.2,
+  "is_synthetic_dataset": true,
+  "features": [
+    "department_code",
+    "priority",
+    "registration_type",
+    "priority_score",
+    "queue_position",
+    "patients_ahead",
+    "queue_length",
+    "available_doctors",
+    "active_consultations",
+    "hour_of_day",
+    "day_of_week",
+    "historical_dept_avg_wait"
+  ],
+  "target": "wait_time_to_consultation",
+  "evaluation": {
+    "baseline_median": {
+      "mae": 16.39,
+      "rmse": 23.97
+    },
+    "random_forest": {
+      "mae": 4.42,
+      "rmse": 6.12,
+      "r2": 0.9335
+    }
+  },
+  "dataset_temporal_range": {
+    "start": "2026-09-01 08:50:00",
+    "end": "2026-09-30 17:50:00"
+  }
+}
