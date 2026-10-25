@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block title %}Queue Management Dashboard – SmartQueue OPD{% endblock %}
+
+{% block content %}
+
+{# ── Page header ──────────────────────────────────────────────────────────── #}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-0">
+            <i class="fa-solid fa-sliders me-2 text-primary"></i>Queue Management
+        </h2>
+        <p class="text-muted mb-0 small">
+            Role: <span class="badge bg-secondary text-capitalize">{{ current_user.role }}</span>
+            &nbsp;|&nbsp; Real-time queue with priority scheduling and aging scores.
+        </p>
+    </div>
+    <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fa-solid fa-house me-1"></i>Home
+    </a>
+</div>
+
+{# ── Department stat cards ─────────────────────────────────────────────────── #}
+<div class="row g-3 mb-4">
+    {% for s in dept_stats %}
+    <div class="col-md-3 col-sm-6">
+        <div class="card card-custom h-100">
+            <div class="card-body py-3">
+                <div class="d-flex justify-content-between">
+                    <span class="badge bg-primary">{{ s.code }}</span>
+                    <span class="text-muted small">{{ s.total_active }} active</span>
+                </div>
+                <p class="fw-bold mb-1 mt-2">{{ s.name }}</p>
+                <div class="d-flex gap-2 flex-wrap" style="font-size:.8rem;">
+                    <span class="badge bg-warning text-dark">Waiting: {{ s.waiting }}</span>
+                    <span class="badge bg-info text-dark">Checked-In: {{ s.checked_in }}</span>
+                    <span class="badge bg-success">In-Consult: {{ s.in_consult }}</span>
+                    <span class="badge bg-secondary">Called: {{ s.called }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">No departments found. Run the seed script.</div>
+    </div>
+    {% endfor %}
+</div>
+
+{# ── Filter bar ───────────────────────────────────────────────────────────── #}
+<div class="card card-custom mb-4">
+    <div class="card-body py-3">
+        <form method="GET" action="{{ url_for('admin.queue_dashboard') }}"
+              class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold mb-1">Department</label>
+                <select name="dept_id" class="form-select form-select-sm">
+                    <option value="">All Departments</option>
+                    {% for d in departments %}
+                    <option value="{{ d.id }}"
+                        {% if selected_dept and selected_dept.id == d.id %}selected{% endif %}>
+                        {{ d.name }} ({{ d.code }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold mb-1">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">All Active</option>
+                    {% for s in active_statuses %}
+                    <option value="{{ s }}"
+                        {% if status_filter == s %}selected{% endif %}>{{ s }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small fw-semibold mb-1">Priority</label>
+                <select name="priority" class="form-select form-select-sm">
+                    <option value="">All Priorities</option>
+                    {% for p in priority_order %}
+                    <option value="{{ p }}"
+                        {% if priority_filter == p %}selected{% endif %}>{{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-primary btn-sm flex-grow-1">
+                    <i class="fa-solid fa-filter me-1"></i>Filter
+                </button>
+                <a href="{{ url_for('admin.queue_dashboard') }}"
+                   class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-rotate-right me-1"></i>Reset
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# ── Queue table ──────────────────────────────────────────────────────────── #}
+<div class="card card-custom">
+    <div class="card-header py-3 d-flex justify-content-between align-items-center"
+         style="background-color:#0a2540; color:white;">
+        <span>
+            <i class="fa-solid fa-list-ol me-2"></i>
+            {% if selected_dept %}{{ selected_dept.name }}{% else %}All Departments{% endif %}
+            — Active Queue
+        </span>
+        <span class="badge bg-light text-dark fs-6">{{ token_rows|length }} records</span>
+    </div>
+    <div class="card-body p-0">
+        {% if token_rows %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3">#</th>
+                        <th>Token</th>
+                        <th>Department</th>
+                        <th>Original Priority</th>
+                        <th>Eff. Score</th>
+                        <th>Status</th>
+                        <th>Elapsed Wait</th>
+                        <th>Est. Add'l Wait (ML)</th>
+                        <th>Registered At</th>
+                        {% if current_user.role in ['admin', 'receptionist'] %}
+                        <th>Change Priority</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in token_rows %}
+                    {% set t = row.token %}
+                    <tr>
+                        <td class="ps-3 fw-bold text-primary">#{{ loop.index }}</td>
+                        <td class="fw-bold">{{ t.token_number }}</td>
+                        <td>
+                            <span class="badge bg-secondary">{{ t.department.code }}</span>
+                            <small class="text-muted ms-1">{{ t.department.name }}</small>
+                        </td>
+                        <td>
+                            <span class="badge priority-{{ t.priority }}">{{ t.priority }}</span>
+                        </td>
+                        <td>
+                            <span class="fw-semibold
+                                {% if row.effective_score >= 1000 %}text-danger
+                                {% elif row.effective_score >= 500 %}text-warning
+                                {% else %}text-muted{% endif %}">
+                                {{ row.effective_score }}
+                            </span>
+                        </td>
+                        <td>
+                            {% set badge_color = {
+                                'Waiting': 'bg-warning text-dark',
+                                'Checked-In': 'bg-info text-dark',
+                                'Called': 'bg-primary',
+                                'In-Consultation': 'bg-success'
+                            }.get(t.status, 'bg-secondary') %}
+                            <span class="badge {{ badge_color }}">{{ t.status }}</span>
+                        </td>
+                        <td>
+                            <span class="small text-secondary">{{ row.waiting_mins }}m</span>
+                        </td>
+                        <td>
+                            {% set p_wait = t | predicted_wait %}
+                            {% if p_wait is not none %}
+                            <span class="badge bg-light text-primary border" title="Random Forest ML Model Prediction">
+                                ~{{ p_wait | int }}m
+                            </span>
+                            {% else %}
+                            <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">
+                            {{ t.created_at.strftime('%H:%M:%S') }}
+                        </td>
+                        {% if current_user.role in ['admin', 'receptionist'] %}
+                        <td>
+                            {% if t.status in ['Waiting', 'Checked-In'] %}
+                            <form method="POST"
+                                  action="{{ url_for('admin.update_priority', token_id=t.id) }}"
+                                  class="d-flex gap-1 align-items-center">
+                                <select name="new_priority" class="form-select form-select-sm"
+                                        style="width:auto; min-width:110px;">
+                                    {% for p in priority_order %}
+                                    {# Receptionist cannot select Emergency #}
+                                    {% if p == 'Emergency' and current_user.role != 'admin' %}
+                                        {# skip #}
+                                    {% else %}
+                                    <option value="{{ p }}"
+                                        {% if p == t.priority %}selected{% endif %}>
+                                        {{ p }}
+                                    </option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary"
+                                        title="Update priority">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="text-muted small">—</span>
+                            {% endif %}
+                        </td>
+                        {% endif %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center text-muted">
+            <i class="fa-solid fa-inbox fa-3x mb-3 text-secondary"></i>
+            <p class="mb-0">No patients match the current filters.</p>
+            <a href="{{ url_for('admin.queue_dashboard') }}"
+               class="btn btn-outline-secondary btn-sm mt-3">
+                <i class="fa-solid fa-rotate-right me-1"></i>Clear Filters
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# ── Aging policy info box ────────────────────────────────────────────────── #}
+<div class="alert alert-secondary mt-4 small">
+    <strong><i class="fa-solid fa-circle-info me-1"></i>Scheduling Algorithm:</strong>
+    Patients are ordered by effective priority score (descending), then by registration time
+    (ascending — longest waiting first within equal scores). <br>
+    <strong>Aging:</strong> +10 points per 15 minutes waiting — prevents Normal-priority patients
+    from waiting indefinitely. Original clinical priority is never changed in the database.
+    Emergency base score (1000) is reached by a Normal patient after ~22.5 hours of continuous waiting.
+</div>
+
+{% endblock %}

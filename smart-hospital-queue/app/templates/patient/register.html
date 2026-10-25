@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+
+{% block title %}Patient Registration – Smart Hospital Queue{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-custom">
+            <div class="card-header bg-primary text-white py-3">
+                <h4 class="mb-0">
+                    <i class="fa-solid fa-user-plus me-2"></i>Patient Registration
+                </h4>
+            </div>
+            <div class="card-body p-4">
+
+                {# ── macro: render one field's inline error + helper text ── #}
+                {# Usage: {{ field_feedback('name', 'Helper text here') }}    #}
+
+                <form id="registrationForm"
+                      action="{{ url_for('patient.register') }}"
+                      method="POST"
+                      novalidate>
+
+                    {# ── Registration Type ─────────────────────────────── #}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            Registration Type <span class="text-danger">*</span>
+                        </label>
+                        <div class="d-flex gap-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio"
+                                       name="registration_type" id="regTypeWalkin"
+                                       value="Walk-in"
+                                       {% if form.get('registration_type', 'Walk-in') == 'Walk-in' %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold" for="regTypeWalkin">
+                                    <i class="fa-solid fa-person-walking me-1 text-primary"></i>Walk-in Patient
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio"
+                                       name="registration_type" id="regTypeOnline"
+                                       value="Online"
+                                       {% if form.get('registration_type') == 'Online' %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold" for="regTypeOnline">
+                                    <i class="fa-solid fa-laptop-medical me-1 text-success"></i>Online Appointment
+                                </label>
+                            </div>
+                        </div>
+                        {% if errors.get('registration_type') %}
+                            <div class="field-error mt-1">
+                                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.registration_type }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# ── Online appointment fields ──────────────────────── #}
+                    <div id="appointmentFields"
+                         class="mb-4 p-3 border rounded bg-light"
+                         style="display: {% if form.get('registration_type') == 'Online' %}block{% else %}none{% endif %};">
+                        <h6 class="fw-bold text-success mb-3">
+                            <i class="fa-regular fa-calendar-check me-2"></i>Appointment Schedule
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="appointment_date" class="form-label">
+                                    Appointment Date <span class="text-danger">*</span>
+                                </label>
+                                <input type="date"
+                                       class="form-control {% if errors.get('appointment_date') %}is-invalid{% endif %}"
+                                       id="appointment_date" name="appointment_date"
+                                       value="{{ form.get('appointment_date', '') }}">
+                                {% if errors.get('appointment_date') %}
+                                    <div class="invalid-feedback">
+                                        {{ errors.appointment_date }}
+                                    </div>
+                                {% else %}
+                                    <div class="field-hint">Select the appointment date.</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="appointment_time" class="form-label">
+                                    Appointment Time <span class="text-danger">*</span>
+                                </label>
+                                <input type="time"
+                                       class="form-control {% if errors.get('appointment_time') %}is-invalid{% endif %}"
+                                       id="appointment_time" name="appointment_time"
+                                       value="{{ form.get('appointment_time', '') }}">
+                                {% if errors.get('appointment_time') %}
+                                    <div class="invalid-feedback">
+                                        {{ errors.appointment_time }}
+                                    </div>
+                                {% else %}
+                                    <div class="field-hint">Select the appointment time.</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# ── Name / Age / Gender row ───────────────────────── #}
+                    <div class="row g-3 mb-3">
+
+                        {# Full Name #}
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">
+                                Full Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   class="form-control {% if errors.get('name') %}is-invalid{% elif form and form.get('name') and not errors.get('name') %}is-valid{% endif %}"
+                                   id="name" name="name"
+                                   placeholder="e.g. Rahul Sharma"
+                                   value="{{ form.get('name', '') }}"
+                                   minlength="2" maxlength="100"
+                                   pattern="[A-Za-z\u00C0-\u024F\s'\-]+"
+                                   required
+                                   autocomplete="name">
+                            {% if errors.get('name') %}
+                                <div class="invalid-feedback">
+                                    <i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.name }}
+                                </div>
+                            {% else %}
+                                <div class="field-hint">
+                                    Enter your full name (letters, spaces and hyphens only).
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {# Age #}
+                        <div class="col-md-3">
+                            <label for="age" class="form-label">
+                                Age <span class="text-danger">*</span>
+                            </label>
+                            <input type="number"
+                                   class="form-control {% if errors.get('age') %}is-invalid{% endif %}"
+                                   id="age" name="age"
+                                   min="1" max="120"
+                                   placeholder="e.g. 28"
+                                   value="{{ form.get('age', '') }}"
+                                   required>
+                            {% if errors.get('age') %}
+                                <div class="invalid-feedback">
+                                    <i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.age }}
+                                </div>
+                            {% else %}
+                                <div class="field-hint">Enter your age in years (1–120).</div>
+                            {% endif %}
+                        </div>
+
+                        {# Gender #}
+                        <div class="col-md-3">
+                            <label for="gender" class="form-label">
+                                Gender <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select {% if errors.get('gender') %}is-invalid{% endif %}"
+                                    id="gender" name="gender" required>
+                                <option value="" disabled
+                                    {% if not form.get('gender') %}selected{% endif %}>Select</option>
+                                {% for g in ['Male', 'Female', 'Other'] %}
+                                <option value="{{ g }}"
+                                    {% if form.get('gender') == g %}selected{% endif %}>{{ g }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if errors.get('gender') %}
+                                <div class="invalid-feedback">
+                                    <i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.gender }}
+                                </div>
+                            {% else %}
+                                <div class="field-hint">Select your gender.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# ── Phone / Department row ────────────────────────── #}
+                    <div class="row g-3 mb-4">
+
+                        {# Phone #}
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">
+                                Phone Number <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text text-muted">
+                                    <i class="fa-solid fa-mobile-screen-button"></i>
+                                </span>
+                                <input type="tel"
+                                       class="form-control {% if errors.get('phone') %}is-invalid{% endif %}"
+                                       id="phone" name="phone"
+                                       placeholder="e.g. 9876543210"
+                                       value="{{ form.get('phone', '') }}"
+                                       pattern="\d{10}"
+                                       maxlength="10"
+                                       inputmode="numeric"
+                                       required
+                                       autocomplete="tel">
+                                {% if errors.get('phone') %}
+                                    <div class="invalid-feedback">
+                                        <i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.phone }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            {% if not errors.get('phone') %}
+                                <div class="field-hint">
+                                    Must be exactly 10 digits (Indian mobile number).
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {# Department #}
+                        <div class="col-md-6">
+                            <label for="department_id" class="form-label">
+                                Department <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select {% if errors.get('department_id') %}is-invalid{% endif %}"
+                                    id="department_id" name="department_id" required>
+                                <option value="" disabled
+                                    {% if not form.get('department_id') %}selected{% endif %}>
+                                    Select Department
+                                </option>
+                                {% for dept in departments %}
+                                <option value="{{ dept.id }}"
+                                    {% if form.get('department_id') | string == dept.id | string %}selected{% endif %}>
+                                    {{ dept.name }} ({{ dept.code }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                            {% if errors.get('department_id') %}
+                                <div class="invalid-feedback">
+                                    <i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.department_id }}
+                                </div>
+                            {% else %}
+                                <div class="field-hint">Select the department you need to visit.</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {# ── Priority ──────────────────────────────────────── #}
+                    <div class="mb-4">
+                        <label for="priority" class="form-label fw-bold">
+                            Triage Priority Level
+                        </label>
+                        <select class="form-select {% if errors.get('priority') %}is-invalid{% endif %}"
+                                id="priority" name="priority">
+                            <option value="Normal"
+                                {% if form.get('priority', 'Normal') == 'Normal' %}selected{% endif %}>
+                                Normal Priority (Routine OPD)
+                            </option>
+                            <option value="Medium"
+                                {% if form.get('priority') == 'Medium' %}selected{% endif %}>
+                                Medium Priority (Elderly / Moderate Pain)
+                            </option>
+                            <option value="High"
+                                {% if form.get('priority') == 'High' %}selected{% endif %}>
+                                High Priority (Severe Pain / Urgent)
+                            </option>
+                        </select>
+                        {% if errors.get('priority') %}
+                            <div class="invalid-feedback d-block">
+                                <i class="fa-solid fa-circle-exclamation me-1"></i>{{ errors.priority }}
+                            </div>
+                        {% else %}
+                            <div class="field-hint">
+                                Select the urgency level that best describes your condition.
+                                Emergency priority is assigned by clinical staff only.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# ── Submit ────────────────────────────────────────── #}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg" id="btnRegister">
+                            <i class="fa-solid fa-ticket me-2"></i>Generate Token
+                        </button>
+                    </div>
+
+                </form>
+            </div>{# /card-body #}
+        </div>{# /card #}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/register_validation.js') }}"></script>
+{% endblock %}

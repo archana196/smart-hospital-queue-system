@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Staff Login – Smart Hospital Queue{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5 col-lg-4">
+        <div class="card card-custom mt-4">
+            <div class="card-header bg-dark text-white py-3 text-center">
+                <h4 class="mb-0">
+                    <i class="fa-solid fa-right-to-bracket me-2 text-primary"></i>Staff Login
+                </h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('auth.login', next=request.args.get('next', '')) }}" novalidate>
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label fw-semibold">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
+                            <input type="text" class="form-control" id="username" name="username"
+                                   placeholder="Enter your username" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password"
+                                   placeholder="Enter your password" required>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="btn-login">
+                            <i class="fa-solid fa-right-to-bracket me-2"></i>Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center text-muted small py-2">
+                Patient? No login needed — just
+                <a href="{{ url_for('patient.register') }}">register here</a>.
+            </div>
+        </div>
+
+        <!-- Sample credentials reminder (shown in dev only, remove in production) -->
+        <div class="alert alert-secondary mt-3 small">
+            <strong>Sample Credentials (development only):</strong><br>
+            Admin: <code>admin</code> / <code>admin123</code><br>
+            Doctor (GEN): <code>dr_sharma</code> / <code>doctor123</code><br>
+            Doctor (CARD): <code>dr_verma</code> / <code>doctor123</code>
+        </div>
+    </div>
+</div>
+{% endblock %}

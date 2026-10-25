@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Live Queue Status - Smart Hospital Queue{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="fw-bold"><i class="fa-solid fa-list-ol me-2 text-primary"></i>Live OPD Queue Status</h2>
+        <p class="text-muted">Select a department to view the real-time patient queue order determined by our Queue Engine.</p>
+    </div>
+    <div class="col-md-4 align-self-center">
+        <form method="GET" action="{{ url_for('patient.status') }}" class="d-flex">
+            <select name="dept_id" class="form-select me-2" onchange="this.form.submit()">
+                <option value="" disabled {% if not selected_dept %}selected{% endif %}>-- Select Department --</option>
+                {% for dept in departments %}
+                <option value="{{ dept.id }}" {% if selected_dept and selected_dept.id == dept.id %}selected{% endif %}>
+                    {{ dept.name }} ({{ dept.code }})
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+</div>
+
+{% if selected_dept %}
+<div class="card card-custom">
+    <div class="card-header bg-navy text-white d-flex justify-content-between align-items-center py-3" style="background-color: #0a2540;">
+        <h5 class="mb-0"><i class="fa-solid fa-building-user me-2"></i>{{ selected_dept.name }} Queue</h5>
+        <span class="badge bg-light text-dark fs-6">Total Waiting: {{ queue|length }}</span>
+    </div>
+    <div class="card-body p-0">
+        {% if queue %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-3"># Pos</th>
+                        <th>Token Number</th>
+                        <th>Priority</th>
+                        <th>Type</th>
+                        <th>Eff. Score</th>
+                        <th>Elapsed Wait</th>
+                        <th>Est. Additional Wait</th>
+                        <th>Registration Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for token in queue %}
+                    <tr>
+                        <td class="ps-3 fw-bold text-primary">#{{ loop.index }}</td>
+                        <td><span class="fw-bold">{{ token.token_number }}</span></td>
+                        <td>
+                            <span class="badge priority-{{ token.priority }} px-2 py-1">
+                                {{ token.priority }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-outline-secondary text-dark border">
+                                {{ token.registration_type }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="fw-semibold text-muted">{{ token.priority_score }}</span>
+                        </td>
+                        <td>
+                            <span class="small text-secondary">
+                                {{ token | waiting_mins }}m
+                            </span>
+                        </td>
+                        <td>
+                            {% set p_wait = token | predicted_wait %}
+                            {% if p_wait is not none %}
+                            <span class="badge bg-light text-primary border" title="Random Forest ML Model Prediction">
+                                <i class="fa-solid fa-wand-magic-sparkles me-1 text-primary"></i>~{{ p_wait | int }} mins
+                            </span>
+                            {% else %}
+                            <span class="text-muted small">Unavailable</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ token.created_at.strftime('%H:%M:%S') }}</td>
+                        <td>
+                            <span class="badge bg-warning text-dark">{{ token.status }}</span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="p-4 text-center text-muted">
+            <i class="fa-solid fa-clipboard-check fa-3x mb-3 text-secondary"></i>
+            <p class="mb-0">There are currently no patients waiting in the {{ selected_dept.name }} queue.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="alert alert-secondary text-center p-4">
+    <i class="fa-solid fa-circle-info fa-2x me-2 align-middle"></i>
+    Please select a department from the dropdown menu above to view its live queue.
+</div>
+{% endif %}
+{% endblock %}
